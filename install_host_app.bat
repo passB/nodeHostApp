@@ -9,15 +9,15 @@ SET "HOST_SCRIPT=index.js"
 SET "HOST_BATCH=%APP_NAME%.bat"
 
 SET "HOST_MANIFEST_FULL=%TARGET_DIR%\%HOST_MANIFEST%"
-SET "HOST_SCRIPT_FULL=%~dp0\%HOST_SCRIPT%"
+SET "HOST_SCRIPT_FULL=%TARGET_DIR%\%HOST_SCRIPT%"
 SET "HOST_BATCH_FULL=%TARGET_DIR%\%HOST_BATCH%"
 
 SET "USE_LOCAL_FILES="
 SET "TARGET_REG="
 
-REM check prerequisites: is python installed & in path?
-node --version >NUL 2> NUL || (
-    ECHO "node not found in PATH. Please execute this command in a shell where python is in PATH"
+REM check prerequisites: is pass installed & in path?
+pass version >NUL 2> NUL || sh -c "pass version" >NUL 2> NUL || (
+    ECHO "pass not found in PATH. Please execute this command in a shell where pass is in PATH"
     EXIT /B
 )
 
@@ -32,15 +32,15 @@ IF NOT "%1"=="" (
         SET "TARGET_REG=HKCU\Software\Google\Chrome\NativeMessagingHosts\%APP_NAME%"
         SHIFT
     ) ELSE IF "%1"=="chromium"  (
-        ECHO Chromium registry key location for Native Messaging Hosts is undocumented. Assuming key for Chrome. Please provide feedback if this worked: https://github.com/passff/passff/issues/202
+        ECHO Chromium registry key location for Native Messaging Hosts is undocumented. Assuming key for Chrome. Please provide feedback if this worked: https://github.com/passB/nodeHostApp/issues/6
         SET "TARGET_REG=HKCU\Software\Google\Chrome\NativeMessagingHosts\%APP_NAME%"
         SHIFT
     ) ELSE IF "%1"=="opera"  (
-        ECHO Opera registry key location for Native Messaging Hosts is undocumented. Assuming key for Chrome. Please provide feedback if this worked: https://github.com/passff/passff/issues/202
+        ECHO Opera registry key location for Native Messaging Hosts is undocumented. Assuming key for Chrome. Please provide feedback if this worked: https://github.com/passB/nodeHostApp/issues/6
         SET "TARGET_REG=HKCU\Software\Google\Chrome\NativeMessagingHosts\%APP_NAME%"
         SHIFT
     ) ELSE IF "%1"=="vivaldi"  (
-        ECHO Vivaldi registry key location for Native Messaging Hosts is undocumented. Assuming key for Chrome. Please provide feedback if this worked: https://github.com/passff/passff/issues/202
+        ECHO Vivaldi registry key location for Native Messaging Hosts is undocumented. Assuming key for Chrome. Please provide feedback if this worked: https://github.com/passB/nodeHostApp/issues/6
         SET "TARGET_REG=HKCU\Software\Google\Chrome\NativeMessagingHosts\%APP_NAME%"
         SHIFT
     ) ELSE (
@@ -71,6 +71,7 @@ IF NOT EXIST "%~dp0%HOST_SCRIPT%" (
     EXIT /B
 )
 COPY /Y "%~dp0%HOST_MANIFEST%" "%HOST_MANIFEST_FULL%"
+COPY /Y "%~dp0%HOST_SCRIPT%" "%HOST_SCRIPT_FULL%"
 
 
 powershell -Command "(Get-Content '%HOST_MANIFEST_FULL%') -replace 'PLACEHOLDER', '%HOST_BATCH_FULL:\=/%' | Set-Content '%HOST_MANIFEST_FULL%'"
@@ -93,8 +94,8 @@ REG ADD "%TARGET_REG%" /ve /d "%HOST_MANIFEST_FULL%" /f || (
 EXIT /B
 
 :help
-ECHO Usage: %0 [OPTION] [chrome^|chromium^|firefox^|opera^|vivaldi]
-ECHO
+ECHO Usage: %0 [chrome^|chromium^|firefox^|opera^|vivaldi]
+ECHO.
 ECHO Options:
 ECHO   --help     Show this message"
 EXIT /B

@@ -11,5 +11,8 @@
   "dependencies": {
     "chrome-native-messaging": "^0.2.0",
     "cross-spawn": "^5.1.0"
+  },
+  "devDependencies": {
+    "pkg": "^4.3.0-beta.1"
   }
 }
