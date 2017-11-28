@@ -13,7 +13,7 @@ PLATFORM="$(uname | cut -d _ -f 1 | tr '[:upper:]' '[:lower:]')"
 if [[ "$(uname -v)" == *"Microsoft"* ]]; then
     PLATFORM="winBash"
     echo "while bash for windows should essentially work, there has no installer been implemented yet."
-    echo "try using the install_host_app.bat from bash for windows, that might work"
+    echo "try using the install_host_app.bat from bash for windows, that might work, although it is designed for MYSY2/Cygwin"
     #TODO
     exit
 fi
@@ -78,7 +78,7 @@ mkdir -p "${TARGET_DIR}"
 
 
 echo "#!/usr/bin/env bash" > "${HOST_STARTER_FULL}"
-for env in "PATH" "HOME" "GNUPGHOME" "PASSWORD_STORE_DIR" "PASSWORD_STORE_GPG_OPTS"; do
+for env in "PATH" "HOME" "GNUPGHOME" "PASSWORD_STORE_DIR" "PASSWORD_STORE_GPG_OPTS" "PASSWORD_STORE_ENABLE_EXTENSIONS"; do
 [ -z "${!env}" ] || echo "export ${env}=\"${!env}\"" >> "${HOST_STARTER_FULL}"
 done
 echo "node \"${HOST_SCRIPT_FULL}\"" >> "${HOST_STARTER_FULL}"
