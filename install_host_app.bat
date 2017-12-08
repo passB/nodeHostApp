@@ -2,10 +2,16 @@
 SETLOCAL
 
 SET "APP_NAME=passb"
+SET "INSTALL_TYPE=source"
 
 SET "TARGET_DIR=%APPDATA%\%APP_NAME%"
 SET "HOST_MANIFEST=%APP_NAME%.json"
-SET "HOST_SCRIPT=index.js"
+IF "%INSTALL_TYPE%"=="source" (
+    SET "HOST_SCRIPT=index.js"
+) else (
+    SET "HOST_SCRIPT=index.exe"
+)
+
 SET "HOST_BATCH=%APP_NAME%.bat"
 
 SET "HOST_MANIFEST_FULL=%TARGET_DIR%\%HOST_MANIFEST%"
@@ -72,7 +78,14 @@ IF NOT EXIST "%~dp0%HOST_SCRIPT%" (
 )
 COPY /Y "%~dp0%HOST_MANIFEST%" "%HOST_MANIFEST_FULL%"
 COPY /Y "%~dp0%HOST_SCRIPT%" "%HOST_SCRIPT_FULL%"
-
+IF "%INSTALL_TYPE%"=="source" (
+    COPY /Y "%~dp0package.json" "%TARGET_DIR%"
+    COPY /Y "%~dp0yarn.lock" "%TARGET_DIR%"
+    CMD /C "cd ""%TARGET_DIR%"" & yarn install || npm install" || (
+        echo 'Tried "yarn install" and "npm install", but none of them worked. Do you have those tools installed?'
+        EXIT /B
+    )
+)
 
 powershell -Command "(Get-Content '%HOST_MANIFEST_FULL%') -replace 'PLACEHOLDER', '%HOST_BATCH_FULL:\=/%' | Set-Content '%HOST_MANIFEST_FULL%'"
 
@@ -84,7 +97,11 @@ powershell -Command "(Get-Content '%HOST_MANIFEST_FULL%') -replace 'PLACEHOLDER'
     ECHO SET "PASSWORD_STORE_DIR=%PASSWORD_STORE_DIR%"
     ECHO SET "PASSWORD_STORE_GPG_OPTS=%PASSWORD_STORE_GPG_OPTS%"
     ECHO SET "PASSWORD_STORE_ENABLE_EXTENSIONS=%PASSWORD_STORE_ENABLE_EXTENSIONS%"
-    ECHO node "%HOST_SCRIPT_FULL%"  %%*
+    IF "%INSTALL_TYPE%"=="source" (
+        ECHO node "%HOST_SCRIPT_FULL%"  %%*
+    ) ELSE (
+        ECHO "%HOST_SCRIPT_FULL%"  %%*
+    )
 )>"%HOST_BATCH_FULL%"
 
 REG ADD "%TARGET_REG%" /ve /d "%HOST_MANIFEST_FULL%" /f || (

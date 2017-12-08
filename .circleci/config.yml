@@ -30,21 +30,21 @@ jobs:
 
       # package for windows
       - run: ./node_modules/.bin/pkg -t node8-win-x64 index.js
-      - run: sed -i -e 's/index.js/index.exe/' -e 's/ECHO node/ECHO/' install_host_app.bat
-      - run: TAG="$(git describe --tags)" || true; zip "artifacts/passb_hostapp_${TAG:-$CIRCLE_SHA1}_win64.zip" index.exe install_host_app.bat passb.json
+      - run: sed -i -e 's/^SET "INSTALL_TYPE=.*/SET "INSTALL_TYPE=binary"/' install_host_app.bat
+      - run: TAG="$(git tag -l --points-at HEAD)"; zip "artifacts/passb_hostapp_${TAG:-$CIRCLE_SHA1}_win64.zip" index.exe install_host_app.bat passb.json
 
       # for osx & linux
-      - run: sed -i -e 's/index.js/index/' -e 's/echo "node /echo "/' install_host_app.sh
+      - run: sed -i -e 's/^INSTALL_TYPE=.*/INSTALL_TYPE="binary"/' install_host_app.sh
 
       #package for osx
       - run: rm -f index
       - run: ./node_modules/.bin/pkg -t node8-macos-x64 index.js
-      - run: TAG="$(git describe --tags)" || true; zip "artifacts/passb_hostapp_${TAG:-$CIRCLE_SHA1}_osx.zip" index install_host_app.sh passb.json
+      - run: TAG="$(git tag -l --points-at HEAD)" || true; zip "artifacts/passb_hostapp_${TAG:-$CIRCLE_SHA1}_osx.zip" index install_host_app.sh passb.json
 
       #package for linux
       - run: rm -f index
       - run: ./node_modules/.bin/pkg -t node8-linux-x64 index.js
-      - run: TAG="$(git describe --tags)" || true; zip "artifacts/passb_hostapp_${TAG:-$CIRCLE_SHA1}_linux.zip" index install_host_app.sh passb.json
+      - run: TAG="$(git tag -l --points-at HEAD)" || true; zip "artifacts/passb_hostapp_${TAG:-$CIRCLE_SHA1}_linux.zip" index install_host_app.sh passb.json
 
       - store_artifacts:
           path: artifacts
