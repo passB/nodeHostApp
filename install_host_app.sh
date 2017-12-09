@@ -7,7 +7,7 @@ function usage {
     -h, --help     Show this message"
 }
 
-
+INSTALL_TYPE="source"
 PLATFORM="$(uname | cut -d _ -f 1 | tr '[:upper:]' '[:lower:]')"
 
 if [[ "$(uname -v)" == *"Microsoft"* ]]; then
@@ -67,23 +67,41 @@ fi
 APP_NAME="passb"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+APP_DIR="${TARGET_DIR}/${APP_NAME}"
 ORIGIN_MAINFEST="${DIR}/${APP_NAME}.json"
-HOST_SCRIPT_FULL="${TARGET_DIR}/index.js"
 HOST_MANIFEST_FULL="${TARGET_DIR}/${APP_NAME}.json"
 HOST_STARTER_FULL="${TARGET_DIR}/${APP_NAME}.sh"
 
 echo "installing to ${TARGET_DIR} ..."
 
 mkdir -p "${TARGET_DIR}"
+mkdir -p "${APP_DIR}"
 
+if [ "$INSTALL_TYPE" == "source" ]; then
+    cp "${DIR}/package.json" "${DIR}/yarn.lock" "${APP_DIR}"
+    (cd "${APP_DIR}"; yarn install || npm install ) || {
+        echo 'Tried "yarn install" and "npm install", but none of them worked. Do you have those tools installed?'
+        exit 1;
+    }
+    SCRIPT_NAME="index.js"
+elif [ "$INSTALL_TYPE" == "binary" ]; then
+    SCRIPT_NAME="index"
+fi
+
+HOST_SCRIPT_FULL="${APP_DIR}/${SCRIPT_NAME}"
+cp "${DIR}/${SCRIPT_NAME}" "${HOST_SCRIPT_FULL}"
+chmod +x "${HOST_SCRIPT_FULL}"
 
 echo "#!/usr/bin/env bash" > "${HOST_STARTER_FULL}"
 for env in "PATH" "HOME" "GNUPGHOME" "PASSWORD_STORE_DIR" "PASSWORD_STORE_GPG_OPTS" "PASSWORD_STORE_ENABLE_EXTENSIONS"; do
 [ -z "${!env}" ] || echo "export ${env}=\"${!env}\"" >> "${HOST_STARTER_FULL}"
 done
-echo "node \"${HOST_SCRIPT_FULL}\"" >> "${HOST_STARTER_FULL}"
+if [ "$INSTALL_TYPE" == "source" ]; then
+    echo "node \"${HOST_SCRIPT_FULL}\"" >> "${HOST_STARTER_FULL}"
+else
+    echo "\"${HOST_SCRIPT_FULL}\"" >> "${HOST_STARTER_FULL}"
+fi
 chmod +x "${HOST_STARTER_FULL}"
 cat "${HOST_STARTER_FULL}"
 
 sed "s/PLACEHOLDER/${HOST_STARTER_FULL////\\/}/" "${ORIGIN_MAINFEST}" > "${HOST_MANIFEST_FULL}"
-cp "${DIR}/index.js" "${HOST_SCRIPT_FULL}"

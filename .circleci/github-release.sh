@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-TAG=$(git describe --tags) || true
+TAG="$(git tag -l --points-at HEAD)"
 
 if [ -n "${TAG}" ]; then
  PREFIX="passb_hostapp_${TAG}"
