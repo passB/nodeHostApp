@@ -106,7 +106,8 @@ async function listEntries() {
         '-type', 'd',
         '-or',
         '-not', '-path', '*/.*',
-        '-type', 'f', '-iname', '*.gpg',
+        '(', '-type', 'f', '-or', '-type', 'l', ')',
+        '-iname', '*.gpg',
       ];
 
       if (process.platform === 'win32') {
