@@ -1,5 +1,6 @@
 const nativeMessage = require('chrome-native-messaging');
 const spawn = require('cross-spawn');
+const package = require('./package.json');
 
 /*
 (async function test() {
@@ -55,6 +56,8 @@ async function handleMessage({command, args}) {
       return await executePassCommand('show', args);
     case 'version':
       return await executePassCommand('version', args);
+    case 'host-app-version':
+      return buildReply({stdout: [ package.version ], stderr: [], returnCode: 0});
     case 'list-entries':
       return await listEntries();
     default:
